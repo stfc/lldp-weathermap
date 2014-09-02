@@ -67,41 +67,23 @@ def main(config):
             #The placer_list holds a value which coresponds to which row the node should be placed
             #No_ is used to count the ammount of nodes in a row
 
+            rank = 4
             if "swt-z9000" in hostname:
-                name.append(hostname)
-                placer_list.append(1)
-                count[1] = count[1] +1
-
-            #This is for the current switches with a 40Gb link
-            elif "swt-s4810" in hostname and speed == "10000000000":
-                name.append(hostname)
-                placer_list.append(2)
-                count[2] = count[2]+1
-
+                rank = 1
+            elif "swt-s4810" in hostname and speed == 40000000000:
+                rank = 2
             elif "swt-s4810" in hostname:
-                name.append(hostname)
-                placer_list.append(3)
-                count[3] = count[3]+1
-
+                rank = 3
             elif "s60" in hostname:
-                name.append(hostname)
-                placer_list.append(5)
-                count[5] = count[5]+1
-
+                rank = 5
             elif "swt-5" in hostname:
-                name.append(hostname)
-                placer_list.append(6)
-                count[6] = count[6]+1
-
+                rank = 6
             elif "rtr" in hostname:
-                name.append(hostname)
-                placer_list.append(7)
-                count[7] = count[7] +1
+                rank = 7
 
-            else :
-                name.append(hostname)
-                placer_list.append(4)
-                count[4] = count[4]+1
+            name.append(hostname)
+            placer_list.append(rank)
+            count[rank] = count[rank]+1
 
 
     #Works out how many pixels to put between each node on a row
