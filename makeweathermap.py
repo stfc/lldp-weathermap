@@ -152,9 +152,8 @@ def main(config):
 
             else :
                 file0.write("LINK " + remote_hostname + "-" + local_hostname + "-" + str(primary_key) +  "\n")
-                if interface_speed == 40000000000:
-                    file0.write("    WIDTH 4\n")
-
+                file0.write("    WIDTH %d\n" % (interface_speed / 10000000000))
+                file0.write("    BANDWIDTH %dG\n" % (interface_speed / 1000000000))
                 file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + str(graph_number) + "&type=port_bits&legend=no \n")
                 file0.write("    INFOURL /device/device=" + str(device_id) + "/tab=port/port=" + str(graph_number) + "/\n")
                 file0.write("    TARGET /opt/observium/rrd/" + local_hostname_raw + "/port-" + str(interface_index) + ".rrd:INOCTETS:OUTOCTETS\n")
@@ -162,11 +161,7 @@ def main(config):
                     file0.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
                 else:
                     file0.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
-
-                if interface_speed == 40000000000:
-                    file0.write("    BANDWIDTH 40G\n\n")
-                else:
-                    file0.write("\n")
+                file0.write("\n")
 
                 #The primary key is used in the LINK line to stop links from being deleted as they had the same name
                 #As some nodes will have 2 links connecting them
