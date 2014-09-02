@@ -208,23 +208,23 @@ def main(config):
 
             compos = row.find(",")
 
-            First = row[2:compos-1]
+            first = row[2:compos-1]
 
-            if "pscs" in First:
-                First = First[0:(len(First))-14]
+            if "pscs" in first:
+                first = first[0:(len(first))-14]
 
             row = row[compos+3:len(row)]
             compos = row.find(",")
 
-            Second = row[0:compos-1]
-            SecondRaw = Second
-            if "pscs" in Second:
-                Second = Second[0:(len(Second))-14]
+            second = row[0:compos-1]
+            second_raw = second
+            if "pscs" in second:
+                second = second[0:(len(second))-14]
 
             row = row[compos+2:len(row)]
             compos = row.find(",")
 
-            graphNo = row[0:compos-1]
+            graph_number = row[0:compos-1]
 
             row = row[compos+2:len(row)]
             compos = row.find(",")
@@ -234,12 +234,12 @@ def main(config):
             row = row[compos+2:len(row)]
             compos = row.find(",")
 
-            ifIndex = row[0:compos-1]
+            interface_index = row[0:compos-1]
 
             row = row[compos+2:len(row)]
             compos = row.find(",")
 
-            deviceId = row[0:len(row)-2]
+            device_id = row[0:len(row)-2]
 
             row = row[compos+2:len(row)]
             compos = row.find(",")
@@ -250,26 +250,26 @@ def main(config):
 
             #writes all the lines to file
 
-            Names = First + Second
+            names = first + second
 
             #'used to check if the link has already happend in reverse (from the other nodes perspective )
 
-            NamesRev = Second + First
+            names_reverse = second + first
 
-            if Names in if_gone_reverse:
+            if names in if_gone_reverse:
                 check = check +1 # seeing what is rejected (no effect on anything)
 
             else :
-                file0.write("LINK " + First + "-" + Second + "-" + str(primary_key) +  "\n")
+                file0.write("LINK " + first + "-" + second + "-" + str(primary_key) +  "\n")
                 if "40000000000" in speed:
                     file0.write("    WIDTH 4\n")
-                file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + graphNo + "&type=port_bits&legend=no \n")
-                file0.write("    INFOURL /device/device=" + deviceId + "/tab=port/port=" + graphNo + "/\n")
-                file0.write("    TARGET /opt/observium/rrd/" + SecondRaw + "/port-" + ifIndex + ".rrd:INOCTETS:OUTOCTETS\n")
-                if Names in if_gone:
-                    file0.write("    NODES " + Second + ":10:10 " + First + ":10:10\n")
+                file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + graph_number + "&type=port_bits&legend=no \n")
+                file0.write("    INFOURL /device/device=" + device_id + "/tab=port/port=" + graph_number + "/\n")
+                file0.write("    TARGET /opt/observium/rrd/" + second_raw + "/port-" + interface_index + ".rrd:INOCTETS:OUTOCTETS\n")
+                if names in if_gone:
+                    file0.write("    NODES " + second + ":10:10 " + first + ":10:10\n")
                 else:
-                    file0.write("    NODES " + Second + ":-10:-10 " + First + ":-10:-10\n")
+                    file0.write("    NODES " + second + ":-10:-10 " + first + ":-10:-10\n")
                 if "40000000000" in speed:
                     file0.write("    BANDWIDTH 40G\n\n")
                 else :
@@ -279,8 +279,8 @@ def main(config):
                 #As some nodes will have 2 links connecting them
 
                 primary_key = primary_key +1
-                if_gone.append(Names)
-                if_gone_reverse.append(NamesRev)
+                if_gone.append(names)
+                if_gone_reverse.append(names_reverse)
 
     file0.close()
 
