@@ -136,70 +136,36 @@ def main(config):
         rows = cur.fetchall()
 
         for row in rows:
-            row = str(row)
+            remote_hostname_raw, local_hostname_raw, graph_number, interface_speed, interface_index, device_id, port_id = row
 
-            # remove the .pscs... / splits the many components up
-            compos = row.find(",")
-            first = row[2:compos-1]
-
-            if "pscs" in first:
-                first = first[0:(len(first))-14]
-
-            row = row[compos+3:len(row)]
-            compos = row.find(",")
-
-            second = row[0:compos-1]
-            second_raw = second
-            if "pscs" in second:
-                second = second[0:(len(second))-14]
-
-            row = row[compos+2:len(row)]
-            compos = row.find(",")
-
-            graph_number = row[0:compos-1]
-
-            row = row[compos+2:len(row)]
-            compos = row.find(",")
-
-            speed = row[0:compos-1]
-
-            row = row[compos+2:len(row)]
-            compos = row.find(",")
-
-            interface_index = row[0:compos-1]
-
-            row = row[compos+2:len(row)]
-            compos = row.find(",")
-
-            device_id = row[0:len(row)-2]
-
-            row = row[compos+2:len(row)]
-            compos = row.find(",")
+            local_hostname = local_hostname_raw.split('.', 1)[0]
+            remote_hostname = remote_hostname_raw.split('.', 1)[0]
 
             #writes all the lines to file
-            names = first + second
+            names = remote_hostname + local_hostname
+            #used to check if the link has already happend in reverse (from the other nodes perspective )
+            names_reverse = local_hostname + remote_hostname
 
-            #'used to check if the link has already happend in reverse (from the other nodes perspective )
-
-            names_reverse = second + first
 
             if names in if_gone_reverse:
                 check = check +1 # seeing what is rejected (no effect on anything)
 
             else :
-                file0.write("LINK " + first + "-" + second + "-" + str(primary_key) +  "\n")
-                if "40000000000" in speed:
+                file0.write("LINK " + remote_hostname + "-" + local_hostname + "-" + str(primary_key) +  "\n")
+                if interface_speed == 40000000000:
                     file0.write("    WIDTH 4\n")
-                file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + graph_number + "&type=port_bits&legend=no \n")
-                file0.write("    INFOURL /device/device=" + device_id + "/tab=port/port=" + graph_number + "/\n")
-                file0.write("    TARGET /opt/observium/rrd/" + second_raw + "/port-" + interface_index + ".rrd:INOCTETS:OUTOCTETS\n")
+
+                file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + str(graph_number) + "&type=port_bits&legend=no \n")
+                file0.write("    INFOURL /device/device=" + str(device_id) + "/tab=port/port=" + str(graph_number) + "/\n")
+                file0.write("    TARGET /opt/observium/rrd/" + local_hostname_raw + "/port-" + str(interface_index) + ".rrd:INOCTETS:OUTOCTETS\n")
                 if names in if_gone:
-                    file0.write("    NODES " + second + ":10:10 " + first + ":10:10\n")
+                    file0.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
                 else:
-                    file0.write("    NODES " + second + ":-10:-10 " + first + ":-10:-10\n")
-                if "40000000000" in speed:
+                    file0.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
+
+                if interface_speed == 40000000000:
                     file0.write("    BANDWIDTH 40G\n\n")
-                else :
+                else:
                     file0.write("\n")
 
                 #The primary key is used in the LINK line to stop links from being deleted as they had the same name
