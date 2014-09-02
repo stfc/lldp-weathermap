@@ -104,11 +104,11 @@ def main(config):
     with con:
         cur = con.cursor()
 
-        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id,port_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
+        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
         rows = cur.fetchall()
 
         for row in rows:
-            remote_hostname_raw, local_hostname_raw, graph_number, interface_speed, interface_index, device_id, port_id = row
+            remote_hostname_raw, local_hostname_raw, graph_number, interface_speed, interface_index, device_id = row
 
             local_hostname = local_hostname_raw.split('.', 1)[0]
             remote_hostname = remote_hostname_raw.split('.', 1)[0]
