@@ -10,7 +10,7 @@
 #If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
 #1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
 #2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
- 
+
 
 import MySQLdb as mdb
 import fnmatch
@@ -63,9 +63,9 @@ file0.write(header)
 with con:
 
     cur = con.cursor()
-   
+
     f=cur.execute( " select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname"   )
-   
+
     rows = cur.fetchall()
 
     for row in rows:
@@ -74,7 +74,7 @@ with con:
         compos = row.find(",")
         dotpos   = row.find(".")
 
-       
+
         #removes the .pcs... at the end of name if present
         if dotpos > 1:
             hostname = (row[2:dotpos])
@@ -83,7 +83,7 @@ with con:
             hostname = (row[2:compos-1])
 
         speed = row[compos+2:len(row)-2]
-       
+
 #Finds an identifiable part of any switch the is worth watching
 #To make spacing even between nodes they are assigned row so the number in each can be counted
 
@@ -101,7 +101,7 @@ with con:
             name.append(hostname)
             PlacerList.append(2)
             No2 = No2+1
-                
+
         elif "swt-s4810" in hostname:
             name.append(hostname)
             PlacerList.append(3)
@@ -127,8 +127,8 @@ with con:
             PlacerList.append(4)
             No4 = No4+1
 
-       
-#Works out how many pixels to put between each node on a row    
+
+#Works out how many pixels to put between each node on a row
 #Iteration could have been used but this was just easier than thinking of how to set it up
 S1 = 1800/No1
 S2 = 1800/No2
@@ -154,7 +154,7 @@ No1 = float(0.5)
 
 for current in range(0,len(name)):
 
-   
+
     file0.write("NODE " + str(name[current]) + "\n")
     file0.write("    LABEL " + str(name[current]) +"\n")
 
@@ -164,12 +164,12 @@ for current in range(0,len(name)):
         No1 = No1 + 1
 
     elif PlacerList[current] == 2:
-         file0.write("    ICON images/network-switch-sfp-96.png \n")   
+         file0.write("    ICON images/network-switch-sfp-96.png \n")
          file0.write("    POSITION " + str(int(S2 * No2)) + "  500\n")
          No2 = No2 + 1
 
     elif PlacerList[current] == 3:
-         file0.write("    ICON images/network-switch-sfp-96.png \n")   
+         file0.write("    ICON images/network-switch-sfp-96.png \n")
          file0.write("    POSITION " + str(int(S3 * No3)) + " 600\n")
          No3 = No3 + 1
 
@@ -188,38 +188,38 @@ for current in range(0,len(name)):
          file0.write("    POSITION " + str(int(S6 * No6)) + " 750\n")
          No6 = No6+ 1
 
-    elif PlacerList[current] == 7:       
+    elif PlacerList[current] == 7:
         file0.write("    ICON images/network-router-blue.png\n")
         file0.write("    POSITION " + str(int(S7 * No7)) + " 100\n")
-        No7 = No7+ 1       
+        No7 = No7+ 1
 
     file0.write("\n")
 
-       
-          
+
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #This part deals with the links
 
 with con:
 
     cur = con.cursor()
-   
+
     f=cur.execute( "select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id,port_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
     rows = cur.fetchall()
-   
+
     for row in rows:
 
-        row = str(row)       
+        row = str(row)
 
         # remove the .pscs... / splits the many components up
-           
+
         compos = row.find(",")
 
         First = row[2:compos-1]
-       
+
         if "pscs" in First:
             First = First[0:(len(First))-14]
-               
+
         row = row[compos+3:len(row)]
         compos = row.find(",")
 
@@ -236,7 +236,7 @@ with con:
         row = row[compos+2:len(row)]
         compos = row.find(",")
 
-        speed = row[0:compos-1]        
+        speed = row[0:compos-1]
 
         row = row[compos+2:len(row)]
         compos = row.find(",")
@@ -251,23 +251,23 @@ with con:
         row = row[compos+2:len(row)]
         compos = row.find(",")
 
-        port_id = row[0:len(row)-1]   
+        port_id = row[0:len(row)-1]
 
-       
+
 
         #writes all the lines to file
-       
+
         Names = First + Second
 
         #'used to check if the link has already happend in reverse (from the other nodes perspective )
-       
+
         NamesRev = Second + First
 
         if Names in ifGoneRev:
             check = check +1 # seeing what is rejected (no effect on anything)
        #/opt/observium/rrd/swt-s4810p-0b/port-7173101.rrd
-          
-        else :       
+
+        else :
             file0.write("LINK " + First + "-" + Second + "-" + str(primaryKey) +  "\n")
             if "40000000000" in speed:
                 file0.write("    WIDTH 4\n")
@@ -285,7 +285,7 @@ with con:
 
             #The primary key is used in the LINK line to stop links from being deleted as they had the same name
             #As some nodes will have 2 links connecting them
-                           
+
             primaryKey = primaryKey +1
             ifGone.append(Names)
             ifGoneRev.append(NamesRev)
