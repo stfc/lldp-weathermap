@@ -145,7 +145,7 @@ def main(config):
     #This writes all the infomation for NODES to the confing file
     #The str(int( is used as decimals in the config file will stop the nodes being placed
 
-    for current in range(0,len(name)):
+    for current in range(0, len(name)):
 
 
         file0.write("NODE " + str(name[current]) + "\n")
@@ -197,7 +197,7 @@ def main(config):
 
         cur = con.cursor()
 
-        f=cur.execute( "select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id,port_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
+        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id,port_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
         rows = cur.fetchall()
 
         for row in rows:
@@ -258,7 +258,6 @@ def main(config):
 
             if Names in if_gone_reverse:
                 check = check +1 # seeing what is rejected (no effect on anything)
-           #/opt/observium/rrd/swt-s4810p-0b/port-7173101.rrd
 
             else :
                 file0.write("LINK " + First + "-" + Second + "-" + str(primary_key) +  "\n")
@@ -287,7 +286,7 @@ def main(config):
 
 if __name__ == "__main__":
     from ConfigParser import SafeConfigParser
-    config = SafeConfigParser()
-    config.readfp(open('makeweathermap.defaults'))
-    config.read(['makeweathermap.cfg'])
-    main(config)
+    CONFIG = SafeConfigParser()
+    CONFIG.readfp(open('makeweathermap.defaults'))
+    CONFIG.read(['makeweathermap.cfg'])
+    main(CONFIG)
