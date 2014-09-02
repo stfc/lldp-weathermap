@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
 import MySQLdb as mdb
-import fnmatch
-import math
 
 def main(config):
     """
