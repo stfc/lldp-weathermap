@@ -105,24 +105,10 @@ def main(config):
 
 
     #Works out how many pixels to put between each node on a row
-    #Iteration could have been used but this was just easier than thinking of how to set it up
-    spacing = [0]*8
-    spacing[1] = 1800/count[1]
-    spacing[2] = 1800/count[2]
-    spacing[3] = 1800/count[3]
-    spacing[4] = 1800/count[4]
-    spacing[5] = 1800/count[5]
-    spacing[6] = 1800/count[6]
-    spacing[7] = 1800/count[7]
-
-    #0.5 will produce an equal between the end and start
-    count[7] = float(0.5)
-    count[5] = float(0.5)
-    count[6] = float(0.5)
-    count[4] = float(0.5)
-    count[3] = float(0.5)
-    count[2] = float(0.5)
-    count[1] = float(0.5)
+    spacing = [0]*len(count)
+    for i, v in enumerate(count):
+        spacing[i] = 1800/(v+1)
+        count[i] = float(0.5)
 
     #This writes all the infomation for NODES to the confing file
     #The str(int( is used as decimals in the config file will stop the nodes being placed
