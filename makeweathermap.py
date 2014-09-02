@@ -35,12 +35,12 @@ def main(config):
         config.get('database', 'schema'),
     )
 
-    file0 = open(config.get('weathermap', 'filename'), 'w')
+    weathermap = open(config.get('weathermap', 'filename'), 'w')
 
     header = open('header.txt').read()
 
     #Writesthe header of the config file
-    file0.write(header)
+    weathermap.write(header)
 
     with con:
         cur = con.cursor()
@@ -114,17 +114,17 @@ def main(config):
     #The str(int( is used as decimals in the config file will stop the nodes being placed
 
     for current in range(0, len(name)):
-        file0.write("NODE " + str(name[current]) + "\n")
-        file0.write("    LABEL " + str(name[current]) +"\n")
+        weathermap.write("NODE " + str(name[current]) + "\n")
+        weathermap.write("    LABEL " + str(name[current]) +"\n")
 
         rank = placer_list[current]
         icon = config.get('icons', 'rank%d' % rank)
 
-        file0.write("    ICON images/%s.png\n" % icon)
-        file0.write("    POSITION " + str(int(spacing[rank] * count[rank])) + " %s\n" % config.get('offsets', 'rank%d' % rank))
+        weathermap.write("    ICON images/%s.png\n" % icon)
+        weathermap.write("    POSITION " + str(int(spacing[rank] * count[rank])) + " %s\n" % config.get('offsets', 'rank%d' % rank))
         count[rank] = count[rank] + 1
 
-        file0.write("\n")
+        weathermap.write("\n")
 
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #This part deals with the links
@@ -151,17 +151,17 @@ def main(config):
                 check = check +1 # seeing what is rejected (no effect on anything)
 
             else :
-                file0.write("LINK " + remote_hostname + "-" + local_hostname + "-" + str(primary_key) +  "\n")
-                file0.write("    WIDTH %d\n" % (interface_speed / 10000000000))
-                file0.write("    BANDWIDTH %dG\n" % (interface_speed / 1000000000))
-                file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + str(graph_number) + "&type=port_bits&legend=no \n")
-                file0.write("    INFOURL /device/device=" + str(device_id) + "/tab=port/port=" + str(graph_number) + "/\n")
-                file0.write("    TARGET /opt/observium/rrd/" + local_hostname_raw + "/port-" + str(interface_index) + ".rrd:INOCTETS:OUTOCTETS\n")
+                weathermap.write("LINK " + remote_hostname + "-" + local_hostname + "-" + str(primary_key) +  "\n")
+                weathermap.write("    WIDTH %d\n" % (interface_speed / 10000000000))
+                weathermap.write("    BANDWIDTH %dG\n" % (interface_speed / 1000000000))
+                weathermap.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + str(graph_number) + "&type=port_bits&legend=no \n")
+                weathermap.write("    INFOURL /device/device=" + str(device_id) + "/tab=port/port=" + str(graph_number) + "/\n")
+                weathermap.write("    TARGET /opt/observium/rrd/" + local_hostname_raw + "/port-" + str(interface_index) + ".rrd:INOCTETS:OUTOCTETS\n")
                 if names in if_gone:
-                    file0.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
+                    weathermap.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
                 else:
-                    file0.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
-                file0.write("\n")
+                    weathermap.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
+                weathermap.write("\n")
 
                 #The primary key is used in the LINK line to stop links from being deleted as they had the same name
                 #As some nodes will have 2 links connecting them
@@ -170,7 +170,7 @@ def main(config):
                 if_gone.append(names)
                 if_gone_reverse.append(names_reverse)
 
-    file0.close()
+    weathermap.close()
 
 if __name__ == "__main__":
     from ConfigParser import SafeConfigParser
