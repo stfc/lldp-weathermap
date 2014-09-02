@@ -104,11 +104,11 @@ def main(config):
     with con:
         cur = con.cursor()
 
-        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
+        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
         rows = cur.fetchall()
 
         for row in rows:
-            remote_hostname_raw, local_hostname_raw, graph_number, interface_speed, interface_index, device_id = row
+            remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
 
             local_hostname = local_hostname_raw.split('.', 1)[0]
             remote_hostname = remote_hostname_raw.split('.', 1)[0]
@@ -123,12 +123,13 @@ def main(config):
                 check = check +1 # seeing what is rejected (no effect on anything)
 
             else :
-                weathermap.write("LINK " + remote_hostname + "-" + local_hostname + "-" + str(primary_key) +  "\n")
+                weathermap.write("LINK %s-%s-%s\n" % (local_hostname, remote_hostname, primary_key))
                 weathermap.write("    WIDTH %d\n" % (interface_speed / 10000000000))
                 weathermap.write("    BANDWIDTH %dG\n" % (interface_speed / 1000000000))
-                weathermap.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + str(graph_number) + "&type=port_bits&legend=no \n")
-                weathermap.write("    INFOURL /device/device=" + str(device_id) + "/tab=port/port=" + str(graph_number) + "/\n")
-                weathermap.write("    TARGET /opt/observium/rrd/" + local_hostname_raw + "/port-" + str(interface_index) + ".rrd:INOCTETS:OUTOCTETS\n")
+                weathermap.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=%s&type=port_bits&legend=no \n" % (graph_number))
+                weathermap.write("    OVERLIBCAPTION From [%s] [%s] to [%s] [%s]\n" % (local_hostname, local_port, remote_hostname, remote_port))
+                weathermap.write("    INFOURL /device/device=%s/tab=port/port=%s/\n" % (device_id, graph_number))
+                weathermap.write("    TARGET /opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS\n" % (local_hostname_raw, interface_index))
                 if names in if_gone:
                     weathermap.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
                 else:
