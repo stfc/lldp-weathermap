@@ -1,22 +1,24 @@
 #!/usr/bin/python
-#This program will produce a .conf file that holds the necessary headings/nodes/links
-#The node positions are currently decided by their name any changes to or new node names will result in the nodes being missed
-#The link thickness (representing the connection speed) only represents 40GB or 1Gb
-
-# To use this take the ConfigFile that produces and overwrite the existing configfile in /opt/observium/html/weathermap/configs
-
-#Uses information retrieved by lldp protocol stored in a database on observium.gridpp.rl.ac.uk
-
-#If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
-#1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
-#2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
-
 
 import MySQLdb as mdb
 import fnmatch
 import math
 
 def main(config):
+    """
+    Produce a .conf file that holds the necessary headings/nodes/links
+
+    The node positions are currently decided by their name any changes to or new node names will result in the nodes being missed
+    The link thickness (representing the connection speed) only represents 40GB or 1Gb
+
+    To use this take the ConfigFile that produces and overwrite the existing configfile in /opt/observium/html/weathermap/configs
+
+    Uses information retrieved by lldp protocol stored in the observium database
+
+    If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
+    1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
+    2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
+    """
     placer_list = []
     name = []
     if_gone = []
