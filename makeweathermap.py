@@ -28,7 +28,6 @@ ifGone = []
 ifGoneRev = []
 check = 0
 deg  = 0
-pi = float(2 * math.pi)
 primaryKey = 0
 
 No7 = 0
