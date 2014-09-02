@@ -117,40 +117,12 @@ def main(config):
         file0.write("NODE " + str(name[current]) + "\n")
         file0.write("    LABEL " + str(name[current]) +"\n")
 
-        if placer_list[current] == 1:
-            file0.write("    ICON images/network-switch-qsfp-128.png\n")
-            file0.write("    POSITION " + str(int(spacing[1] * count[1])) + " 300\n")
-            count[1] = count[1] + 1
+        rank = placer_list[current]
+        icon = config.get('icons', 'rank%d' % rank)
 
-        elif placer_list[current] == 2:
-            file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(spacing[2] * count[2])) + "  500\n")
-            count[2] = count[2] + 1
-
-        elif placer_list[current] == 3:
-            file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(spacing[3] * count[3])) + " 600\n")
-            count[3] = count[3] + 1
-
-        elif placer_list[current] == 4:
-            file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(spacing[4] * count[4])) + " 800\n")
-            count[4] = count[4]+ 1
-
-        elif placer_list[current] == 5:
-            file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(spacing[5] * count[5])) + " 700\n")
-            count[5] = count[5]+ 1
-
-        elif placer_list[current] == 6:
-            file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(spacing[6] * count[6])) + " 750\n")
-            count[6] = count[6]+ 1
-
-        elif placer_list[current] == 7:
-            file0.write("    ICON images/network-router-blue.png\n")
-            file0.write("    POSITION " + str(int(spacing[7] * count[7])) + " 100\n")
-            count[7] = count[7]+ 1
+        file0.write("    ICON images/%s.png\n" % icon)
+        file0.write("    POSITION " + str(int(spacing[rank] * count[rank])) + " %s\n" % config.get('offsets', 'rank%d' % rank))
+        count[rank] = count[rank] + 1
 
         file0.write("\n")
 

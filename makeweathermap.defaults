@@ -6,3 +6,21 @@ schema = observium
 
 [weathermap]
 filename = weathermap_auto.conf
+
+[icons]
+rank1 = network-switch-qsfp-128
+rank2 = network-switch-sfp-96
+rank3 = network-switch-sfp-96
+rank4 = network-hub-generic
+rank5 = network-hub-generic
+rank6 = network-hub-generic
+rank7 = network-router-blue
+
+[offsets]
+rank1 = 300
+rank2 = 500
+rank3 = 600
+rank4 = 800
+rank5 = 700
+rank6 = 750
+rank7 = 100
