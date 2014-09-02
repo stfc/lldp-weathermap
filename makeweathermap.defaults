@@ -1,0 +1,8 @@
+[database]
+hostname = localhost
+username = observium
+password = password
+schema = observium
+
+[weathermap]
+filename = weathermap_auto.conf

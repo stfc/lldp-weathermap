@@ -16,7 +16,11 @@ import MySQLdb as mdb
 import fnmatch
 import math
 
-from makeweathermap_config import *
+from ConfigParser import SafeConfigParser
+
+config = SafeConfigParser()
+config.readfp(open('makeweathermap.defaults'))
+config.read(['makeweathermap.cfg'])
 
 PlacerList = []
 name = []
@@ -37,10 +41,15 @@ No1 = 0
 
 # Connects to the observium database
 
-con = mdb.connect(HOSTNAME, USERNAME, PASSWORD, SCHEMA);
+con = mdb.connect(
+    config.get('database', 'hostname'),
+    config.get('database', 'username'),
+    config.get('database', 'password'),
+    config.get('database', 'schema'),
+);
 
 
-file0 = open("ConfigFile.conf","w")
+file0 = open(config.get('weathermap', 'filename'), 'w')
 
 
 
