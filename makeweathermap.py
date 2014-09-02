@@ -44,7 +44,7 @@ def main(config):
 
     with con:
         cur = con.cursor()
-        cur.execute( " select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname"   )
+        cur.execute("select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname")
         rows = cur.fetchall()
 
         for row in rows:
