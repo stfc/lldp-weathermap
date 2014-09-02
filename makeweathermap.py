@@ -26,13 +26,13 @@ def main(config):
     check = 0
     primary_key = 0
 
-    no7 = 0
-    no6 = 0
-    no5 = 0
-    no4 = 0
-    no3 = 0
-    no2 = 0
-    no1 = 0
+    count7 = 0
+    count6 = 0
+    count5 = 0
+    count4 = 0
+    count3 = 0
+    count2 = 0
+    count1 = 0
 
     # Connects to the observium database
 
@@ -88,60 +88,60 @@ def main(config):
             if "swt-z9000" in hostname:
                 name.append(hostname)
                 placer_list.append(1)
-                no1 = no1 +1
+                count1 = count1 +1
 
             #This is for the current switches with a 40Gb link
 
             elif "swt-s4810" in hostname and speed == "10000000000":
                 name.append(hostname)
                 placer_list.append(2)
-                no2 = no2+1
+                count2 = count2+1
 
             elif "swt-s4810" in hostname:
                 name.append(hostname)
                 placer_list.append(3)
-                no3 = no3+1
+                count3 = count3+1
 
             elif "s60" in hostname:
                 name.append(hostname)
                 placer_list.append(5)
-                no5 = no5+1
+                count5 = count5+1
 
             elif "swt-5" in hostname:
                 name.append(hostname)
                 placer_list.append(6)
-                no6 = no6+1
+                count6 = count6+1
 
             elif "rtr" in hostname:
                 name.append(hostname)
                 placer_list.append(7)
-                no7 = no7 +1
+                count7 = count7 +1
 
             else :
                 name.append(hostname)
                 placer_list.append(4)
-                no4 = no4+1
+                count4 = count4+1
 
 
     #Works out how many pixels to put between each node on a row
     #Iteration could have been used but this was just easier than thinking of how to set it up
-    S1 = 1800/no1
-    S2 = 1800/no2
-    S3 = 1800/no3
-    S4 = 1800/no4
-    S5 = 1800/no5
-    S6 = 1800/no6
-    S7 = 1800/no7
+    spacing1 = 1800/count1
+    spacing2 = 1800/count2
+    spacing3 = 1800/count3
+    spacing4 = 1800/count4
+    spacing5 = 1800/count5
+    spacing6 = 1800/count6
+    spacing7 = 1800/count7
 
     #0.5 will produce an equal between the end and start
 
-    no7 = float(0.5)
-    no5 = float(0.5)
-    no6 = float(0.5)
-    no4 = float(0.5)
-    no3 = float(0.5)
-    no2 = float(0.5)
-    no1 = float(0.5)
+    count7 = float(0.5)
+    count5 = float(0.5)
+    count6 = float(0.5)
+    count4 = float(0.5)
+    count3 = float(0.5)
+    count2 = float(0.5)
+    count1 = float(0.5)
 
 
     #This writes all the infomation for NODES to the confing file
@@ -155,38 +155,38 @@ def main(config):
 
         if placer_list[current] == 1:
             file0.write("    ICON images/network-switch-qsfp-128.png\n")
-            file0.write("    POSITION " + str(int(S1 * no1)) + " 300\n")
-            no1 = no1 + 1
+            file0.write("    POSITION " + str(int(spacing1 * count1)) + " 300\n")
+            count1 = count1 + 1
 
         elif placer_list[current] == 2:
             file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(S2 * no2)) + "  500\n")
-            no2 = no2 + 1
+            file0.write("    POSITION " + str(int(spacing2 * count2)) + "  500\n")
+            count2 = count2 + 1
 
         elif placer_list[current] == 3:
             file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(S3 * no3)) + " 600\n")
-            no3 = no3 + 1
+            file0.write("    POSITION " + str(int(spacing3 * count3)) + " 600\n")
+            count3 = count3 + 1
 
         elif placer_list[current] == 4:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S4 * no4)) + " 800\n")
-            no4 = no4+ 1
+            file0.write("    POSITION " + str(int(spacing4 * count4)) + " 800\n")
+            count4 = count4+ 1
 
         elif placer_list[current] == 5:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S5 * no5)) + " 700\n")
-            no5 = no5+ 1
+            file0.write("    POSITION " + str(int(spacing5 * count5)) + " 700\n")
+            count5 = count5+ 1
 
         elif placer_list[current] == 6:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S6 * no6)) + " 750\n")
-            no6 = no6+ 1
+            file0.write("    POSITION " + str(int(spacing6 * count6)) + " 750\n")
+            count6 = count6+ 1
 
         elif placer_list[current] == 7:
             file0.write("    ICON images/network-router-blue.png\n")
-            file0.write("    POSITION " + str(int(S7 * no7)) + " 100\n")
-            no7 = no7+ 1
+            file0.write("    POSITION " + str(int(spacing7 * count7)) + " 100\n")
+            count7 = count7+ 1
 
         file0.write("\n")
 
