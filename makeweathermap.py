@@ -48,18 +48,8 @@ def main(config):
         rows = cur.fetchall()
 
         for row in rows:
-            row = str(row)
-
-            compos = row.find(",")
-            dotpos   = row.find(".")
-
-            #removes the .pcs... at the end of name if present
-            if dotpos > 1:
-                hostname = (row[2:dotpos])
-            else:
-                hostname = (row[2:compos-1])
-
-            speed = row[compos+2:len(row)-2]
+            hostname, speed = row
+            hostname = hostname.split('.', 1)[0]
 
             #Finds an identifiable part of any switch the is worth watching
             #To make spacing even between nodes they are assigned row so the number in each can be counted
