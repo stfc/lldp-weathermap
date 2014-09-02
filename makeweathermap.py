@@ -17,21 +17,20 @@ import fnmatch
 import math
 
 def main(config):
-    PlacerList = []
+    placer_list = []
     name = []
-    ifGone = []
-    ifGoneRev = []
+    if_gone = []
+    if_gone_reverse = []
     check = 0
-    deg  = 0
-    primaryKey = 0
+    primary_key = 0
 
-    No7 = 0
-    No6 = 0
-    No5 = 0
-    No4 = 0
-    No3 = 0
-    No2 = 0
-    No1 = 0
+    no7 = 0
+    no6 = 0
+    no5 = 0
+    no4 = 0
+    no3 = 0
+    no2 = 0
+    no1 = 0
 
     # Connects to the observium database
 
@@ -58,7 +57,7 @@ def main(config):
 
         cur = con.cursor()
 
-        f=cur.execute( " select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname"   )
+        cur.execute( " select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname"   )
 
         rows = cur.fetchall()
 
@@ -81,66 +80,66 @@ def main(config):
     #Finds an identifiable part of any switch the is worth watching
     #To make spacing even between nodes they are assigned row so the number in each can be counted
 
-    #The PlacerList holds a value which coresponds to which row the node should be placed
+    #The placer_list holds a value which coresponds to which row the node should be placed
     #No_ is used to count the ammount of nodes in a row
 
             if "swt-z9000" in hostname:
                 name.append(hostname)
-                PlacerList.append(1)
-                No1 = No1 +1
+                placer_list.append(1)
+                no1 = no1 +1
 
             #This is for the current switches with a 40Gb link
 
             elif "swt-s4810" in hostname and speed == "10000000000":
                 name.append(hostname)
-                PlacerList.append(2)
-                No2 = No2+1
+                placer_list.append(2)
+                no2 = no2+1
 
             elif "swt-s4810" in hostname:
                 name.append(hostname)
-                PlacerList.append(3)
-                No3 = No3+1
+                placer_list.append(3)
+                no3 = no3+1
 
             elif "s60" in hostname:
                 name.append(hostname)
-                PlacerList.append(5)
-                No5 = No5+1
+                placer_list.append(5)
+                no5 = no5+1
 
             elif "swt-5" in hostname:
                 name.append(hostname)
-                PlacerList.append(6)
-                No6 = No6+1
+                placer_list.append(6)
+                no6 = no6+1
 
             elif "rtr" in hostname:
                 name.append(hostname)
-                PlacerList.append(7)
-                No7 = No7 +1
+                placer_list.append(7)
+                no7 = no7 +1
 
             else :
                 name.append(hostname)
-                PlacerList.append(4)
-                No4 = No4+1
+                placer_list.append(4)
+                no4 = no4+1
 
 
     #Works out how many pixels to put between each node on a row
     #Iteration could have been used but this was just easier than thinking of how to set it up
-    S1 = 1800/No1
-    S2 = 1800/No2
-    S3 = 1800/No3
-    S4 = 1800/No4
-    S5 = 1800/No5
-    S6 = 1800/No6
-    S7 =1800/No7
+    S1 = 1800/no1
+    S2 = 1800/no2
+    S3 = 1800/no3
+    S4 = 1800/no4
+    S5 = 1800/no5
+    S6 = 1800/no6
+    S7 = 1800/no7
 
     #0.5 will produce an equal between the end and start
 
-    No7 = float(0.5)
-    No5 = float(0.5)
-    No6 = float(0.5)
-    No4 = float(0.5)
-    No3 = float(0.5)
-    No2 = float(0.5)
-    No1 = float(0.5)
+    no7 = float(0.5)
+    no5 = float(0.5)
+    no6 = float(0.5)
+    no4 = float(0.5)
+    no3 = float(0.5)
+    no2 = float(0.5)
+    no1 = float(0.5)
 
 
     #This writes all the infomation for NODES to the confing file
@@ -152,40 +151,40 @@ def main(config):
         file0.write("NODE " + str(name[current]) + "\n")
         file0.write("    LABEL " + str(name[current]) +"\n")
 
-        if PlacerList[current] == 1:
+        if placer_list[current] == 1:
             file0.write("    ICON images/network-switch-qsfp-128.png\n")
-            file0.write("    POSITION " + str(int(S1 * No1)) + " 300\n")
-            No1 = No1 + 1
+            file0.write("    POSITION " + str(int(S1 * no1)) + " 300\n")
+            no1 = no1 + 1
 
-        elif PlacerList[current] == 2:
+        elif placer_list[current] == 2:
             file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(S2 * No2)) + "  500\n")
-            No2 = No2 + 1
+            file0.write("    POSITION " + str(int(S2 * no2)) + "  500\n")
+            no2 = no2 + 1
 
-        elif PlacerList[current] == 3:
+        elif placer_list[current] == 3:
             file0.write("    ICON images/network-switch-sfp-96.png \n")
-            file0.write("    POSITION " + str(int(S3 * No3)) + " 600\n")
-            No3 = No3 + 1
+            file0.write("    POSITION " + str(int(S3 * no3)) + " 600\n")
+            no3 = no3 + 1
 
-        elif PlacerList[current] == 4:
+        elif placer_list[current] == 4:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S4 * No4)) + " 800\n")
-            No4 = No4+ 1
+            file0.write("    POSITION " + str(int(S4 * no4)) + " 800\n")
+            no4 = no4+ 1
 
-        elif PlacerList[current] == 5:
+        elif placer_list[current] == 5:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S5 * No5)) + " 700\n")
-            No5 = No5+ 1
+            file0.write("    POSITION " + str(int(S5 * no5)) + " 700\n")
+            no5 = no5+ 1
 
-        elif PlacerList[current] == 6:
+        elif placer_list[current] == 6:
             file0.write("    ICON images/network-hub-generic.png\n")
-            file0.write("    POSITION " + str(int(S6 * No6)) + " 750\n")
-            No6 = No6+ 1
+            file0.write("    POSITION " + str(int(S6 * no6)) + " 750\n")
+            no6 = no6+ 1
 
-        elif PlacerList[current] == 7:
+        elif placer_list[current] == 7:
             file0.write("    ICON images/network-router-blue.png\n")
-            file0.write("    POSITION " + str(int(S7 * No7)) + " 100\n")
-            No7 = No7+ 1
+            file0.write("    POSITION " + str(int(S7 * no7)) + " 100\n")
+            no7 = no7+ 1
 
         file0.write("\n")
 
@@ -257,18 +256,18 @@ def main(config):
 
             NamesRev = Second + First
 
-            if Names in ifGoneRev:
+            if Names in if_gone_reverse:
                 check = check +1 # seeing what is rejected (no effect on anything)
            #/opt/observium/rrd/swt-s4810p-0b/port-7173101.rrd
 
             else :
-                file0.write("LINK " + First + "-" + Second + "-" + str(primaryKey) +  "\n")
+                file0.write("LINK " + First + "-" + Second + "-" + str(primary_key) +  "\n")
                 if "40000000000" in speed:
                     file0.write("    WIDTH 4\n")
                 file0.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=" + graphNo + "&type=port_bits&legend=no \n")
                 file0.write("    INFOURL /device/device=" + deviceId + "/tab=port/port=" + graphNo + "/\n")
                 file0.write("    TARGET /opt/observium/rrd/" + SecondRaw + "/port-" + ifIndex + ".rrd:INOCTETS:OUTOCTETS\n")
-                if Names in ifGone:
+                if Names in if_gone:
                     file0.write("    NODES " + Second + ":10:10 " + First + ":10:10\n")
                 else:
                     file0.write("    NODES " + Second + ":-10:-10 " + First + ":-10:-10\n")
@@ -280,9 +279,9 @@ def main(config):
                 #The primary key is used in the LINK line to stop links from being deleted as they had the same name
                 #As some nodes will have 2 links connecting them
 
-                primaryKey = primaryKey +1
-                ifGone.append(Names)
-                ifGoneRev.append(NamesRev)
+                primary_key = primary_key +1
+                if_gone.append(Names)
+                if_gone_reverse.append(NamesRev)
 
     file0.close()
 
