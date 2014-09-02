@@ -163,29 +163,29 @@ for current in range(0,len(name)):
         No1 = No1 + 1
 
     elif PlacerList[current] == 2:
-         file0.write("    ICON images/network-switch-sfp-96.png \n")
-         file0.write("    POSITION " + str(int(S2 * No2)) + "  500\n")
-         No2 = No2 + 1
+        file0.write("    ICON images/network-switch-sfp-96.png \n")
+        file0.write("    POSITION " + str(int(S2 * No2)) + "  500\n")
+        No2 = No2 + 1
 
     elif PlacerList[current] == 3:
-         file0.write("    ICON images/network-switch-sfp-96.png \n")
-         file0.write("    POSITION " + str(int(S3 * No3)) + " 600\n")
-         No3 = No3 + 1
+        file0.write("    ICON images/network-switch-sfp-96.png \n")
+        file0.write("    POSITION " + str(int(S3 * No3)) + " 600\n")
+        No3 = No3 + 1
 
     elif PlacerList[current] == 4:
-         file0.write("    ICON images/network-hub-generic.png\n")
-         file0.write("    POSITION " + str(int(S4 * No4)) + " 800\n")
-         No4 = No4+ 1
+        file0.write("    ICON images/network-hub-generic.png\n")
+        file0.write("    POSITION " + str(int(S4 * No4)) + " 800\n")
+        No4 = No4+ 1
 
     elif PlacerList[current] == 5:
-         file0.write("    ICON images/network-hub-generic.png\n")
-         file0.write("    POSITION " + str(int(S5 * No5)) + " 700\n")
-         No5 = No5+ 1
+        file0.write("    ICON images/network-hub-generic.png\n")
+        file0.write("    POSITION " + str(int(S5 * No5)) + " 700\n")
+        No5 = No5+ 1
 
     elif PlacerList[current] == 6:
-         file0.write("    ICON images/network-hub-generic.png\n")
-         file0.write("    POSITION " + str(int(S6 * No6)) + " 750\n")
-         No6 = No6+ 1
+        file0.write("    ICON images/network-hub-generic.png\n")
+        file0.write("    POSITION " + str(int(S6 * No6)) + " 750\n")
+        No6 = No6+ 1
 
     elif PlacerList[current] == 7:
         file0.write("    ICON images/network-router-blue.png\n")
