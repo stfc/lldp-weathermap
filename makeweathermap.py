@@ -41,7 +41,6 @@ def main(config):
         config.get('database', 'schema'),
     )
 
-
     file0 = open(config.get('weathermap', 'filename'), 'w')
 
     header = open('header.txt').read()
@@ -49,16 +48,9 @@ def main(config):
     #Writesthe header of the config file
     file0.write(header)
 
-
-
-
-
     with con:
-
         cur = con.cursor()
-
         cur.execute( " select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname"   )
-
         rows = cur.fetchall()
 
         for row in rows:
@@ -67,21 +59,19 @@ def main(config):
             compos = row.find(",")
             dotpos   = row.find(".")
 
-
             #removes the .pcs... at the end of name if present
             if dotpos > 1:
                 hostname = (row[2:dotpos])
-
             else:
                 hostname = (row[2:compos-1])
 
             speed = row[compos+2:len(row)-2]
 
-    #Finds an identifiable part of any switch the is worth watching
-    #To make spacing even between nodes they are assigned row so the number in each can be counted
+            #Finds an identifiable part of any switch the is worth watching
+            #To make spacing even between nodes they are assigned row so the number in each can be counted
 
-    #The placer_list holds a value which coresponds to which row the node should be placed
-    #No_ is used to count the ammount of nodes in a row
+            #The placer_list holds a value which coresponds to which row the node should be placed
+            #No_ is used to count the ammount of nodes in a row
 
             if "swt-z9000" in hostname:
                 name.append(hostname)
@@ -89,7 +79,6 @@ def main(config):
                 count1 = count1 +1
 
             #This is for the current switches with a 40Gb link
-
             elif "swt-s4810" in hostname and speed == "10000000000":
                 name.append(hostname)
                 placer_list.append(2)
@@ -132,7 +121,6 @@ def main(config):
     spacing7 = 1800/count7
 
     #0.5 will produce an equal between the end and start
-
     count7 = float(0.5)
     count5 = float(0.5)
     count6 = float(0.5)
@@ -141,13 +129,10 @@ def main(config):
     count2 = float(0.5)
     count1 = float(0.5)
 
-
     #This writes all the infomation for NODES to the confing file
     #The str(int( is used as decimals in the config file will stop the nodes being placed
 
     for current in range(0, len(name)):
-
-
         file0.write("NODE " + str(name[current]) + "\n")
         file0.write("    LABEL " + str(name[current]) +"\n")
 
@@ -188,26 +173,20 @@ def main(config):
 
         file0.write("\n")
 
-
-
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #This part deals with the links
 
     with con:
-
         cur = con.cursor()
 
         cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ifSpeed, ifIndex, devices.device_id,port_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
         rows = cur.fetchall()
 
         for row in rows:
-
             row = str(row)
 
             # remove the .pscs... / splits the many components up
-
             compos = row.find(",")
-
             first = row[2:compos-1]
 
             if "pscs" in first:
@@ -246,10 +225,7 @@ def main(config):
 
             port_id = row[0:len(row)-1]
 
-
-
             #writes all the lines to file
-
             names = first + second
 
             #'used to check if the link has already happend in reverse (from the other nodes perspective )
