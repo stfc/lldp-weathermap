@@ -45,7 +45,7 @@ con = mdb.connect(
     config.get('database', 'username'),
     config.get('database', 'password'),
     config.get('database', 'schema'),
-);
+)
 
 
 file0 = open(config.get('weathermap', 'filename'), 'w')
