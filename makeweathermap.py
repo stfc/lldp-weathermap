@@ -2,45 +2,13 @@
 
 import MySQLdb as mdb
 
-def main(config):
-    """
-    Produce a .conf file that holds the necessary headings/nodes/links
+M = 1000000
+G = 1000000000
 
-    The node positions are currently decided by their name any changes to or new node names will result in the nodes being missed
-    The link thickness (representing the connection speed) only represents 40GB or 1Gb
-
-    To use this take the ConfigFile that produces and overwrite the existing configfile in /opt/observium/html/weathermap/configs
-
-    Uses information retrieved by lldp protocol stored in the observium database
-
-    If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
-    1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
-    2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
-    """
-    placer_list = []
+def process_nodes(con, config, weathermap):
     name = []
-    if_gone = []
-    if_gone_reverse = []
-    check = 0
-    primary_key = 0
-
+    placer_list = []
     count = [0]*8
-
-    # Connects to the observium database
-
-    con = mdb.connect(
-        config.get('database', 'hostname'),
-        config.get('database', 'username'),
-        config.get('database', 'password'),
-        config.get('database', 'schema'),
-    )
-
-    weathermap = open(config.get('weathermap', 'filename'), 'w')
-
-    header = open('header.txt').read()
-
-    #Writesthe header of the config file
-    weathermap.write(header)
 
     with con:
         cur = con.cursor()
@@ -98,50 +66,90 @@ def main(config):
 
         weathermap.write("\n")
 
-    #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    #This part deals with the links
+def process_links(con, config, weathermap):
+    if_gone = []
+    if_gone_reverse = []
+    check = 0
+    primary_key = 0
+    cur = con.cursor()
+
+    cur.execute("""
+        select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id
+        from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id
+        where links.remote_hostname not like '%%.gridpp.rl.ac.uk' and ifSpeed > %s
+    """, G)
+    rows = cur.fetchall()
+
+    for row in rows:
+        remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
+
+        local_hostname = local_hostname_raw.split('.', 1)[0]
+        remote_hostname = remote_hostname_raw.split('.', 1)[0]
+
+        #writes all the lines to file
+        names = remote_hostname + local_hostname
+        #used to check if the link has already happend in reverse (from the other nodes perspective )
+        names_reverse = local_hostname + remote_hostname
+
+
+        if names in if_gone_reverse:
+            check = check +1 # seeing what is rejected (no effect on anything)
+
+        else:
+            weathermap.write("LINK %s-%s-%s\n" % (local_hostname, remote_hostname, primary_key))
+            weathermap.write("    WIDTH %d\n" % (interface_speed / (10 * G)))
+            weathermap.write("    BANDWIDTH %dG\n" % (interface_speed / G))
+            weathermap.write("    OVERLIBGRAPH /graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes \n" % (graph_number))
+            weathermap.write("    OVERLIBCAPTION %dGbps link from [%s] (%s) to [%s] (%s)\n" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port))
+            weathermap.write("    INFOURL /device/device=%s/tab=port/port=%s/\n" % (device_id, graph_number))
+            weathermap.write("    TARGET /opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS\n" % (local_hostname_raw, interface_index))
+            if names in if_gone:
+                weathermap.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
+            else:
+                weathermap.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
+            weathermap.write("\n")
+
+            #The primary key is used in the LINK line to stop links from being deleted as they had the same name
+            #As some nodes will have 2 links connecting them
+
+            primary_key = primary_key +1
+            if_gone.append(names)
+            if_gone_reverse.append(names_reverse)
+
+def main(config):
+    """
+    Produce a .conf file that holds the necessary headings/nodes/links
+
+    The node positions are currently decided by their name any changes to or new node names will result in the nodes being missed
+    The link thickness (representing the connection speed) only represents 40GB or 1Gb
+
+    To use this take the ConfigFile that produces and overwrite the existing configfile in /opt/observium/html/weathermap/configs
+
+    Uses information retrieved by lldp protocol stored in the observium database
+
+    If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
+    1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
+    2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
+    """
+
+    # Connect to the observium database
+    con = mdb.connect(
+        config.get('database', 'hostname'),
+        config.get('database', 'username'),
+        config.get('database', 'password'),
+        config.get('database', 'schema'),
+    )
+
+    weathermap = open(config.get('weathermap', 'filename'), 'w')
+
+    header = open('header.txt').read()
+
+    #Writesthe header of the config file
+    weathermap.write(header)
 
     with con:
-        cur = con.cursor()
-
-        cur.execute("select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id where (remote_hostname like ('%swt%') and hostname like ('%swt%')) or (hostname like ('%rtr%') and (remote_hostname like ('%swt%') or remote_hostname like ('%rtr%')))")
-        rows = cur.fetchall()
-
-        for row in rows:
-            remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
-
-            local_hostname = local_hostname_raw.split('.', 1)[0]
-            remote_hostname = remote_hostname_raw.split('.', 1)[0]
-
-            #writes all the lines to file
-            names = remote_hostname + local_hostname
-            #used to check if the link has already happend in reverse (from the other nodes perspective )
-            names_reverse = local_hostname + remote_hostname
-
-
-            if names in if_gone_reverse:
-                check = check +1 # seeing what is rejected (no effect on anything)
-
-            else :
-                weathermap.write("LINK %s-%s-%s\n" % (local_hostname, remote_hostname, primary_key))
-                weathermap.write("    WIDTH %d\n" % (interface_speed / 10000000000))
-                weathermap.write("    BANDWIDTH %dG\n" % (interface_speed / 1000000000))
-                weathermap.write("    OVERLIBGRAPH /graph.php?height=100&width=512&id=%s&type=port_bits&legend=no \n" % (graph_number))
-                weathermap.write("    OVERLIBCAPTION From [%s] [%s] to [%s] [%s]\n" % (local_hostname, local_port, remote_hostname, remote_port))
-                weathermap.write("    INFOURL /device/device=%s/tab=port/port=%s/\n" % (device_id, graph_number))
-                weathermap.write("    TARGET /opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS\n" % (local_hostname_raw, interface_index))
-                if names in if_gone:
-                    weathermap.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
-                else:
-                    weathermap.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
-                weathermap.write("\n")
-
-                #The primary key is used in the LINK line to stop links from being deleted as they had the same name
-                #As some nodes will have 2 links connecting them
-
-                primary_key = primary_key +1
-                if_gone.append(names)
-                if_gone_reverse.append(names_reverse)
+        #process_nodes(con, config, weathermap)
+        process_links(con, config, weathermap)
 
     weathermap.close()
 
