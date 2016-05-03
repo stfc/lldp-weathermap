@@ -2,21 +2,36 @@
 
 import MySQLdb as mdb
 
-M = 1000000
-G = 1000000000
+from weathermap_parser import WeathermapParser
+
+K = 10**3
+M = 10**6
+G = 10**9
+T = 10**12
 
 def process_nodes(con, config, weathermap):
-    name = []
-    placer_list = []
-    count = [0]*8
+    nodes = []
 
     with con:
         cur = con.cursor()
-        cur.execute("select hostname, ifSpeed from devices join ports on devices.device_id = ports.device_id where (hostname like ('swt%') and hostname not like ('swt%7%t%') ) or (hostname like ('%rtr-x%')) group by hostname")
-        rows = cur.fetchall()
+        cur.execute("select devices.hostname, devices.device_id from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id group by devices.hostname")
+        devices = cur.fetchall()
 
-        for row in rows:
-            hostname, speed = row
+        cur.execute("select remote_hostname from links group by remote_hostname")
+        links = cur.fetchall()
+
+        hostnames = set()
+
+        for name in devices + links:
+            name = name[0]
+            if name.startswith('swt') or name.startswith('rtr'):
+                hostnames.add(name.split('.', 1)[0])
+
+        # Turn devices into a lookup table for device ids
+        devices = [ (n.split('.', 1)[0], i) for n, i in devices ]
+        devices = dict(devices)
+
+        for hostname in hostnames:
             hostname = hostname.split('.', 1)[0]
 
             #Finds an identifiable part of any switch the is worth watching
@@ -25,46 +40,45 @@ def process_nodes(con, config, weathermap):
             #The placer_list holds a value which coresponds to which row the node should be placed
             #No_ is used to count the ammount of nodes in a row
 
-            rank = 4
+            icon = 'network-hub-generic'
             if "swt-z9000" in hostname:
-                rank = 1
-            elif "swt-s4810" in hostname and speed == 40000000000:
-                rank = 2
+                icon = 'network-switch-qsfp-128'
             elif "swt-s4810" in hostname:
-                rank = 3
+                icon = 'network-switch-sfp-96'
             elif "s60" in hostname:
-                rank = 5
-            elif "swt-5" in hostname:
-                rank = 6
+                icon = 'network-switch-utp-96'
+            elif "stack" in hostname:
+                icon = 'network-switch-stack-64'
             elif "rtr" in hostname:
-                rank = 7
+                icon = 'network-router-blue-64'
 
-            name.append(hostname)
-            placer_list.append(rank)
-            count[rank] = count[rank]+1
+            if icon:
+                nodes.append((hostname, icon))
 
 
-    #Works out how many pixels to put between each node on a row
-    spacing = [0]*len(count)
-    for i, v in enumerate(count):
-        spacing[i] = 1800/(v+1)
-        count[i] = float(0.5)
+    count = 0
+    for name, icon in nodes:
+        node = 'NODE %s' % name
 
-    #This writes all the infomation for NODES to the confing file
-    #The str(int( is used as decimals in the config file will stop the nodes being placed
+        if node not in weathermap['NODES']:
+            weathermap['NODES'][node] = dict()
 
-    for current in range(0, len(name)):
-        weathermap.write("NODE " + str(name[current]) + "\n")
-        weathermap.write("    LABEL " + str(name[current]) +"\n")
+        #icon = config.get('icons', 'rank%d' % rank)
+        if 'LABEL' not in weathermap['NODES'][node]:
+            weathermap['NODES'][node]['LABEL'] = '%s (auto placed)' % name.split('.', 1)[0]
 
-        rank = placer_list[current]
-        icon = config.get('icons', 'rank%d' % rank)
+        if 'ICON' not in weathermap['NODES'][node]:
+            weathermap['NODES'][node]['ICON'] = "images/%s.png" % icon
 
-        weathermap.write("    ICON images/%s.png\n" % icon)
-        weathermap.write("    POSITION " + str(int(spacing[rank] * count[rank])) + " %s\n" % config.get('offsets', 'rank%d' % rank))
-        count[rank] = count[rank] + 1
+        if 'INFOURL' not in weathermap['NODES'][node] and name in devices:
+            weathermap['NODES'][node]['INFOURL'] = '/device/device=%d/' % devices[name]
 
-        weathermap.write("\n")
+        if 'POSITION' not in weathermap['NODES'][node]:
+            count += 1
+            weathermap['NODES'][node]['POSITION'] = "%s %s" % (1800, 50 * count)
+
+    return weathermap
+
 
 def process_links(con, config, weathermap):
     if_gone = []
@@ -76,15 +90,20 @@ def process_links(con, config, weathermap):
     cur.execute("""
         select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id
         from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id
-        where links.remote_hostname not like '%%.gridpp.rl.ac.uk' and ifSpeed > %s
-    """, G)
+        where links.remote_hostname not like '%%.gridpp.rl.ac.uk' and links.remote_hostname not like '%%.fds.rl.ac.uk' and ifSpeed > %s and ifName not like 'ManagementEthernet%%'
+    """, M)
     rows = cur.fetchall()
 
     for row in rows:
         remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
 
-        local_hostname = local_hostname_raw.split('.', 1)[0]
-        remote_hostname = remote_hostname_raw.split('.', 1)[0]
+        local_hostname = local_hostname_raw.split('.', 1)[0] or 'unknown'
+        remote_hostname = remote_hostname_raw.split('.', 1)[0] or 'unknown'
+
+        if local_hostname == 'unknown':
+            continue
+        if remote_hostname == 'unknown':
+            continue
 
         #writes all the lines to file
         names = remote_hostname + local_hostname
@@ -96,18 +115,20 @@ def process_links(con, config, weathermap):
             check = check +1 # seeing what is rejected (no effect on anything)
 
         else:
-            weathermap.write("LINK %s-%s-%s\n" % (local_hostname, remote_hostname, primary_key))
-            weathermap.write("    WIDTH %d\n" % (interface_speed / (10 * G)))
-            weathermap.write("    BANDWIDTH %dG\n" % (interface_speed / G))
-            weathermap.write("    OVERLIBGRAPH /graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes \n" % (graph_number))
-            weathermap.write("    OVERLIBCAPTION %dGbps link from [%s] (%s) to [%s] (%s)\n" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port))
-            weathermap.write("    INFOURL /device/device=%s/tab=port/port=%s/\n" % (device_id, graph_number))
-            weathermap.write("    TARGET /opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS\n" % (local_hostname_raw, interface_index))
-            if names in if_gone:
-                weathermap.write("    NODES " + local_hostname + ":10:10 " + remote_hostname + ":10:10\n")
-            else:
-                weathermap.write("    NODES " + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10\n")
-            weathermap.write("\n")
+            if 'NODE %s' % local_hostname in weathermap['NODES'] or 'NODE %s' % remote_hostname in weathermap['NODES']:
+                link_name = "LINK %s-%s-%s" % (local_hostname, remote_hostname, primary_key)
+                if link_name not in weathermap['LINKS']:
+                    weathermap['LINKS'][link_name] = {}
+                weathermap['LINKS'][link_name]['WIDTH'] = "%d" % (max(1, interface_speed / (10 * G)))
+                weathermap['LINKS'][link_name]['BANDWIDTH'] = "%dG" % (interface_speed / G)
+                weathermap['LINKS'][link_name]['OVERLIBGRAPH'] = "/graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes" % graph_number
+                weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps link from [%s] (%s) to [%s] (%s)" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port)
+                weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, graph_number)
+                weathermap['LINKS'][link_name]['TARGET'] = "/opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS" % (local_hostname_raw, interface_index)
+                if names in if_gone:
+                    weathermap['LINKS'][link_name]['NODES'] = "" + local_hostname + ":10:10 " + remote_hostname + ":10:10"
+                else:
+                    weathermap['LINKS'][link_name]['NODES'] = "" + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10"
 
             #The primary key is used in the LINK line to stop links from being deleted as they had the same name
             #As some nodes will have 2 links connecting them
@@ -115,6 +136,9 @@ def process_links(con, config, weathermap):
             primary_key = primary_key +1
             if_gone.append(names)
             if_gone_reverse.append(names_reverse)
+
+    return weathermap
+
 
 def main(config):
     """
@@ -140,18 +164,19 @@ def main(config):
         config.get('database', 'schema'),
     )
 
-    weathermap = open(config.get('weathermap', 'filename'), 'w')
 
-    header = open('header.txt').read()
+    parser = WeathermapParser()
 
-    #Writesthe header of the config file
-    weathermap.write(header)
+    weathermap = parser.load(config.get('weathermap', 'header'))
 
     with con:
-        #process_nodes(con, config, weathermap)
-        process_links(con, config, weathermap)
+        weathermap = process_links(con, config, weathermap)
+        weathermap = process_nodes(con, config, weathermap)
 
-    weathermap.close()
+    # Write output to file
+    with open(config.get('weathermap', 'filename'), 'w') as output_file:
+        output_file.write(parser.dump(weathermap))
+        output_file.close()
 
 if __name__ == "__main__":
     from ConfigParser import SafeConfigParser
