@@ -95,8 +95,6 @@ def process_nodes(con, config, weathermap):
 
 
 def process_links(con, config, weathermap):
-    if_gone = []
-    if_gone_reverse = []
     check = 0
     primary_key = 0
     cur = con.cursor()
@@ -145,10 +143,6 @@ def process_links(con, config, weathermap):
         #used to check if the link has already happend in reverse (from the other nodes perspective )
         names_reverse = local_hostname + remote_hostname
 
-
-        if names in if_gone_reverse:
-            check = check +1 # seeing what is rejected (no effect on anything)
-
         else:
             if 'NODE %s' % local_hostname in weathermap['NODES'] or 'NODE %s' % remote_hostname in weathermap['NODES']:
                 link_name = "LINK %s-%s-%s" % (local_hostname, remote_hostname, primary_key)
@@ -160,17 +154,11 @@ def process_links(con, config, weathermap):
                 weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps link from [%s] (%s) to [%s] (%s)" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port)
                 weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, graph_number)
                 weathermap['LINKS'][link_name]['TARGET'] = "/opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS" % (local_hostname_raw, interface_index)
-                if names in if_gone:
-                    weathermap['LINKS'][link_name]['NODES'] = "" + local_hostname + ":10:10 " + remote_hostname + ":10:10"
-                else:
-                    weathermap['LINKS'][link_name]['NODES'] = "" + local_hostname + ":-10:-10 " + remote_hostname + ":-10:-10"
 
             #The primary key is used in the LINK line to stop links from being deleted as they had the same name
             #As some nodes will have 2 links connecting them
 
             primary_key = primary_key +1
-            if_gone.append(names)
-            if_gone_reverse.append(names_reverse)
 
     return weathermap
 
