@@ -7,6 +7,9 @@ schema = librenms
 [weathermap]
 filename = weathermap_auto.conf
 
+[links]
+min_ifspeed = 1000000000
+
 [icons]
 rank1 = network-switch-qsfp-128
 rank2 = network-switch-sfp-96

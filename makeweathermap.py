@@ -103,9 +103,14 @@ def process_links(con, config, weathermap):
 
     cur.execute("""
         select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id
-        from links join ports on ports.port_id=links.local_port_id join devices on devices.device_id=ports.device_id
-        where links.remote_hostname not like '%%.gridpp.rl.ac.uk' and links.remote_hostname not like '%%.fds.rl.ac.uk' and ifSpeed > %s and ifName not like 'ManagementEthernet%%'
-    """, M)
+        from links
+        join ports on ports.port_id=links.local_port_id
+        join devices on devices.device_id=ports.device_id
+        where links.remote_hostname not like '%%.gridpp.rl.ac.uk'
+            and links.remote_hostname not like '%%.fds.rl.ac.uk'
+            and ifSpeed > %s
+            and ifName not like 'ManagementEthernet%%'
+    """ % config.get('links', 'min_ifspeed'))
     rows = cur.fetchall()
 
     for row in rows:
