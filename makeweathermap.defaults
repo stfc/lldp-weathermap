@@ -1,8 +1,8 @@
 [database]
 hostname = localhost
-username = observium
+username = librenms
 password = password
-schema = observium
+schema = librenms
 
 [weathermap]
 filename = weathermap_auto.conf

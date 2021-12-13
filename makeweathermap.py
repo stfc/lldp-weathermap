@@ -160,17 +160,16 @@ def main(config):
 
     The node positions are currently decided by their name any changes to or new node names will result in the nodes being missed
     The link thickness (representing the connection speed) only represents 40GB or 1Gb
+    To use this take the ConfigFile that produces and overwrite the existing configfile in /data/librenms/html/weathermap/configs
 
-    To use this take the ConfigFile that produces and overwrite the existing configfile in /opt/observium/html/weathermap/configs
-
-    Uses information retrieved by lldp protocol stored in the observium database
+    Uses information retrieved by lldp protocol stored in the librenms database
 
     If any naming conventions are changed or new nodes want to be displayed there are 3 things that need updating
     1) SQL search on line 122 modify the where statements (currently anything with swt or rtr-x in its name is included but anything with note[swt and then 7 then t is excluded].
     2) from line 148 will decide where the node is placed on the bottom row. 3) SQL search on line 258 modify the where statements (currently links a combination of with swt or rtr in the name is selected)
     """
 
-    # Connect to the observium database
+    # Connect to the librenms database
     con = mdb.connect(
         config.get('database', 'hostname'),
         config.get('database', 'username'),
