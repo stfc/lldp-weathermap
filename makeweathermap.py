@@ -112,6 +112,7 @@ def process_nodes(con, config, weathermap):
     nodes.sort(key=natural_keys)
 
     for name, icon in nodes:
+        name = name.replace(' ', '_')
         node = 'NODE %s' % name
 
         if config.getboolean('autoplace', 'enabled'):
