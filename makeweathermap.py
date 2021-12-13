@@ -117,7 +117,7 @@ def process_links(con, config, weathermap):
     rows = cur.fetchall()
 
     for row in rows:
-        remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
+        remote_hostname_raw, local_hostname_raw, local_port_id, local_port_name, remote_port, interface_speed, interface_index, device_id = row
 
         local_hostname = local_hostname_raw.replace(' ', '_').lower() or 'unknown'
         remote_hostname = remote_hostname_raw.replace(' ', '_').lower() or 'unknown'
@@ -150,10 +150,10 @@ def process_links(con, config, weathermap):
                     weathermap['LINKS'][link_name] = {}
                 weathermap['LINKS'][link_name]['WIDTH'] = "%d" % round(max(1, interface_speed / base_ifspeed))
                 weathermap['LINKS'][link_name]['BANDWIDTH'] = "%dG" % (interface_speed / G)
-                weathermap['LINKS'][link_name]['OVERLIBGRAPH'] = "/graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes" % graph_number
-                weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps link from [%s] (%s) to [%s] (%s)" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port)
-                weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, graph_number)
-                weathermap['LINKS'][link_name]['TARGET'] = "/opt/observium/rrd/%s/port-%s.rrd:INOCTETS:OUTOCTETS" % (local_hostname_raw, interface_index)
+                weathermap['LINKS'][link_name]['OVERLIBGRAPH'] = "/graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes" % local_port_id
+                weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps link from [%s] (%s) to [%s] (%s)" % (interface_speed / G, local_hostname, local_port_name, remote_hostname, remote_port)
+                weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, local_port_id)
+                weathermap['LINKS'][link_name]['TARGET'] = "/data/librenms/rrd/%s/port-id%s.rrd:INOCTETS:OUTOCTETS" % (local_hostname_raw, local_port_id)
 
             #The primary key is used in the LINK line to stop links from being deleted as they had the same name
             #As some nodes will have 2 links connecting them
