@@ -9,6 +9,7 @@ filename = weathermap_auto.conf
 name = placeholder
 title = placeholder
 links = true
+vlans = false
 
 [autoplace]
 enabled = true

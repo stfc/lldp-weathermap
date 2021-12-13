@@ -321,6 +321,45 @@ def process_links(con, config, weathermap):
     return weathermap
 
 
+def process_vlans(con, config, weathermap):
+    print()
+    print('Processing VLANs')
+    print('================')
+    print()
+    cur = con.cursor()
+    cur.execute("""
+        select hostname, ifName, ifDescr, ifAlias, ifSpeed, ports.device_id, port_id
+        from ports
+        join devices on ports.device_id = devices.device_id
+        where ports.ifAdminStatus = 'up' and (ports.ifName like 'vlan%' or ports.ifName like 'vni%')
+    """)
+    rows = cur.fetchall()
+
+    for row in rows:
+        raw_hostname, vlan, ifDescr, ifAlias, ifSpeed, device_id, port_id = row
+        #hostname = raw_hostname.split('.', 1)[0].replace(' ', '_').lower()
+        hostname = raw_hostname.replace(' ', '_').lower()
+        vlan = vlan.replace(' ', '_').lower()
+        #if not ifSpeed:
+        #    ifSpeed = 1 * G
+        ifSpeed = 1 * G
+
+        if 'NODE %s' % hostname in weathermap['NODES'] and 'NODE %s' % vlan in weathermap['NODES']:
+            link_name = "LINK %s-%s" % (hostname, vlan)
+            print('    "%s" -> "%s"' % (hostname, vlan))
+            if link_name not in weathermap['LINKS']:
+                weathermap['LINKS'][link_name] = {}
+            weathermap['LINKS'][link_name]['NODES'] = "%s %s" % (hostname, vlan)
+            weathermap['LINKS'][link_name]['WIDTH'] = "1"
+            weathermap['LINKS'][link_name]['BANDWIDTH'] = "10000"
+            weathermap['LINKS'][link_name]['OVERLIBGRAPH'] = "/graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes" % port_id
+            weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps VLAN [%s] (%s) on %s" % (ifSpeed / G, vlan, ifAlias, hostname)
+            weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, port_id)
+            weathermap['LINKS'][link_name]['TARGET'] = "/data/librenms/rrd/%s/port-id%s.rrd:INOCTETS:OUTOCTETS" % (raw_hostname, port_id)
+
+    return weathermap
+
+
 def main(config):
     """
     Produce a .conf file that holds the necessary headings/nodes/links
@@ -356,6 +395,8 @@ def main(config):
     with con:
         if config.getboolean('weathermap', 'links'):
             weathermap = process_links(con, config, weathermap)
+        if config.getboolean('weathermap', 'vlans'):
+            weathermap = process_vlans(con, config, weathermap)
         weathermap = process_nodes(con, config, weathermap)
 
     # Write output to file
