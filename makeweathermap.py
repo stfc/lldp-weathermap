@@ -119,8 +119,19 @@ def process_links(con, config, weathermap):
     for row in rows:
         remote_hostname_raw, local_hostname_raw, graph_number, local_port, remote_port, interface_speed, interface_index, device_id = row
 
-        local_hostname = local_hostname_raw.split('.', 1)[0] or 'unknown'
-        remote_hostname = remote_hostname_raw.split('.', 1)[0] or 'unknown'
+        local_hostname = local_hostname_raw.replace(' ', '_').lower() or 'unknown'
+        remote_hostname = remote_hostname_raw.replace(' ', '_').lower() or 'unknown'
+
+        if not '.' in local_hostname:
+             local_hostname = local_hostname + '.pscs.internal'
+
+        if not '.' in remote_hostname:
+             remote_hostname = remote_hostname + '.pscs.internal'
+
+        if local_hostname == 'unknown' or remote_hostname == 'unknown' or remote_hostname == 'not_advertised':
+            print("Skipping link '%s' -> '%s'" % (local_hostname, remote_hostname))
+            continue
+
 
         if local_hostname == 'unknown':
             continue
