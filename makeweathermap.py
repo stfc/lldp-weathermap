@@ -206,7 +206,8 @@ def main(config):
     weathermap['GLOBALS']['TITLE'] = config.get('weathermap', 'title')
 
     with con:
-        weathermap = process_links(con, config, weathermap)
+        if config.getboolean('weathermap', 'links'):
+            weathermap = process_links(con, config, weathermap)
         weathermap = process_nodes(con, config, weathermap)
 
     # Write output to file

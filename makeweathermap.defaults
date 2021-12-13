@@ -8,6 +8,7 @@ schema = librenms
 filename = weathermap_auto.conf
 name = placeholder
 title = placeholder
+links = true
 
 [links]
 min_ifspeed = 1000000000
