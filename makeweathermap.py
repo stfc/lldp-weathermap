@@ -36,10 +36,21 @@ def process_nodes(con, config, weathermap):
 
         hostnames = set()
 
+        name_filters = []
+        if config.get('autoplace', 'filter'):
+            name_filters = config.get('autoplace', 'filter').split()
+
+        if config.get('autoplace', 'exclude'):
+            name_excludes = config.get('autoplace', 'exclude').split()
+
         for name in devices + links:
             name = name[0]
-            if name.startswith('swt') or name.startswith('rtr'):
-                hostnames.add(name.split('.', 1)[0])
+
+            if name.startswith(tuple(name_filters)) and not name.startswith(tuple(name_excludes)):
+                hostnames.add(name.lower())
+                print('Included host "%s"' % name)
+            else:
+                print('Excluded host "%s"' % name)
 
         # Turn devices into a lookup table for device ids
         devices = [ (n.split('.', 1)[0], i) for n, i in devices ]

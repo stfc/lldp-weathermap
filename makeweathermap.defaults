@@ -12,6 +12,8 @@ links = true
 
 [autoplace]
 enabled = true
+filter = swt
+exclude =
 
 [links]
 min_ifspeed = 1000000000
