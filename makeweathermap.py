@@ -101,6 +101,8 @@ def process_links(con, config, weathermap):
     primary_key = 0
     cur = con.cursor()
 
+    base_ifspeed = config.getint('links', 'base_ifspeed')
+
     cur.execute("""
         select links.remote_hostname, devices.hostname, links.local_port_id, ports.ifName, remote_port, ifSpeed, ifIndex, devices.device_id
         from links
@@ -152,7 +154,7 @@ def process_links(con, config, weathermap):
                 link_name = "LINK %s-%s-%s" % (local_hostname, remote_hostname, primary_key)
                 if link_name not in weathermap['LINKS']:
                     weathermap['LINKS'][link_name] = {}
-                weathermap['LINKS'][link_name]['WIDTH'] = "%d" % (max(1, interface_speed / (10 * G)))
+                weathermap['LINKS'][link_name]['WIDTH'] = "%d" % round(max(1, interface_speed / base_ifspeed))
                 weathermap['LINKS'][link_name]['BANDWIDTH'] = "%dG" % (interface_speed / G)
                 weathermap['LINKS'][link_name]['OVERLIBGRAPH'] = "/graph.php?height=200&width=512&id=%s&type=port_bits&legend=yes" % graph_number
                 weathermap['LINKS'][link_name]['OVERLIBCAPTION'] = "%dGbps link from [%s] (%s) to [%s] (%s)" % (interface_speed / G, local_hostname, local_port, remote_hostname, remote_port)

@@ -12,6 +12,7 @@ links = true
 
 [links]
 min_ifspeed = 1000000000
+base_ifspeed = 20000000000
 
 [icons]
 rank1 = network-switch-qsfp-128
