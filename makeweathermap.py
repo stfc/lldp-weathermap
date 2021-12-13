@@ -105,8 +105,16 @@ def process_nodes(con, config, weathermap):
                 nodes.append((hostname, icon))
 
 
-    count = 0
+    count_i = 0
+    count_j = 0
 
+
+    position_i = config.getint('autoplace', 'initial_i')
+    position_j = config.getint('autoplace', 'initial_j')
+    position_pattern = config.get('autoplace', 'pattern')
+    position_spacing = config.getint('autoplace', 'spacing')
+    position_wrap = config.getboolean('autoplace', 'wrap')
+    position_limit = config.getint('autoplace', 'limit')
     name_pattern = config.get('autoplace', 'name')
 
     nodes.sort(key=natural_keys)
@@ -131,7 +139,11 @@ def process_nodes(con, config, weathermap):
                 weathermap['NODES'][node]['INFOURL'] = '/device/device=%d/' % devices[name]
 
             if 'POSITION' not in weathermap['NODES'][node]:
-                weathermap['NODES'][node]['POSITION'] = "%s %s" % (1800, 50 * count)
+                if position_wrap and count_i * position_spacing > position_limit:
+                    count_i = 0
+                    count_j += 1
+                count_i += 1
+                weathermap['NODES'][node]['POSITION'] = position_pattern.format(i=position_i + position_spacing * count_i, j=position_j + position_spacing * count_j)
 
     return weathermap
 

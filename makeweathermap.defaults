@@ -14,7 +14,13 @@ links = true
 enabled = true
 filter = swt
 exclude =
+initial_i = 0
+initial_j = 1800
+pattern = {j} {i}
+spacing = 50
 name = %%s (auto)
+wrap = false
+limit = 1900
 
 [links]
 min_ifspeed = 1000000000
