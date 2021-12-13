@@ -82,6 +82,9 @@ def process_nodes(con, config, weathermap):
 
 
     count = 0
+
+    name_pattern = config.get('autoplace', 'name')
+
     for name, icon in nodes:
         node = 'NODE %s' % name
 
@@ -92,7 +95,7 @@ def process_nodes(con, config, weathermap):
         #icon = config.get('icons', 'rank%d' % rank)
         if node in weathermap['NODES']:
             if 'LABEL' not in weathermap['NODES'][node]:
-                weathermap['NODES'][node]['LABEL'] = '%s (auto placed)' % name.split('.', 1)[0]
+                weathermap['NODES'][node]['LABEL'] = name_pattern % name.split('.', 1)[0]
 
             if 'ICON' not in weathermap['NODES'][node]:
                 weathermap['NODES'][node]['ICON'] = "images/%s.png" % icon

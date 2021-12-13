@@ -14,6 +14,7 @@ links = true
 enabled = true
 filter = swt
 exclude =
+name = %%s (auto)
 
 [links]
 min_ifspeed = 1000000000
