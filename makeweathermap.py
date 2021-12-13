@@ -201,6 +201,10 @@ def main(config):
 
     weathermap = parser.load(config.get('weathermap', 'header'))
 
+    weathermap['GLOBALS']['HTMLOUTPUTFILE'] = 'output/%s.html' % config.get('weathermap', 'name')
+    weathermap['GLOBALS']['IMAGEOUTPUTFILE'] = 'output/%s.png' % config.get('weathermap', 'name')
+    weathermap['GLOBALS']['TITLE'] = config.get('weathermap', 'title')
+
     with con:
         weathermap = process_links(con, config, weathermap)
         weathermap = process_nodes(con, config, weathermap)
