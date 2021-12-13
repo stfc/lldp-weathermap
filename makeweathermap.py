@@ -15,6 +15,7 @@
 #    limitations under the License.
 
 import pymysql as mdb
+from re import split as re_split
 
 from weathermap_parser import WeathermapParser
 
@@ -22,6 +23,20 @@ K = 10**3
 M = 10**6
 G = 10**9
 T = 10**12
+
+
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+
+def natural_keys(text):
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+    '''
+    return [ atoi(c) for c in re_split(r'(\d+)', text[0]) ]
+
 
 def process_nodes(con, config, weathermap):
     nodes = []
@@ -88,6 +103,8 @@ def process_nodes(con, config, weathermap):
     count = 0
 
     name_pattern = config.get('autoplace', 'name')
+
+    nodes.sort(key=natural_keys)
 
     for name, icon in nodes:
         node = 'NODE %s' % name
