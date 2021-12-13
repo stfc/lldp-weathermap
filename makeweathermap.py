@@ -15,6 +15,8 @@
 #    limitations under the License.
 
 import pymysql as mdb
+from math import sqrt
+from PIL import Image, ImageDraw
 from re import split as re_split
 
 from weathermap_parser import WeathermapParser
@@ -149,9 +151,12 @@ def process_nodes(con, config, weathermap):
 
 
 def process_links(con, config, weathermap):
-    check = 0
+    if_count = {}
+    if_max = {}
     primary_key = 0
     cur = con.cursor()
+    img_debug = Image.new('RGBA', (1920, 1080), (0, 0, 0, 255))
+    draw_debug = ImageDraw.Draw(img_debug)
 
     base_ifspeed = config.getint('links', 'base_ifspeed')
 
@@ -198,6 +203,11 @@ def process_links(con, config, weathermap):
         names_reverse = local_hostname + remote_hostname
 
         else:
+            if names not in if_count:
+                if_count[names] = 1
+            if_count[names] += 1
+            if_max[names] = if_count[names]
+
             if 'NODE %s' % local_hostname in weathermap['NODES'] or 'NODE %s' % remote_hostname in weathermap['NODES']:
                 link_name = "LINK %s-%s-%s" % (local_hostname, remote_hostname, primary_key)
                 if link_name not in weathermap['LINKS']:
@@ -215,6 +225,98 @@ def process_links(con, config, weathermap):
             #As some nodes will have 2 links connecting them
 
             primary_key = primary_key +1
+
+    # Post process link offsets
+    print()
+    print('Processing Link Offsets')
+    print('=======================')
+    print()
+    for link_name, link in weathermap['LINKS'].items():
+        if 'NODES' not in link:
+            continue
+        try:
+            node1, node2 = link['NODES'].split()
+        except ValueError:
+            print('Unable to split link "%s"' % link['NODES'])
+            continue
+        width = 2
+        if 'WIDTH' in link:
+            width = int(link['WIDTH'])
+        names = node2 + node1
+        #print(node1, node2)
+
+        xd, yd = 0, 0
+        xt, yt = 0, 0
+        try:
+            x1, y1 = weathermap['NODES']['NODE %s' % node1]['POSITION'].split()
+            x2, y2 = weathermap['NODES']['NODE %s' % node2]['POSITION'].split()
+
+            x1, y1 = int(x1), int(y1)
+            x2, y2 = int(x2), int(y2)
+
+            # origin
+            draw_debug.ellipse((x1-2, y1-2, x1+2, y1+2), (255,0,0,255))
+
+            # target
+            draw_debug.ellipse((x2-2, y2-2, x2+2, y2+2), (0,255,0,255))
+
+            # midpoint
+            xm, ym = (x1 + x2) / 2, (y1 + y2) / 2
+            draw_debug.ellipse((xm-2, ym-2, xm+2, ym+2), (200,200,200,255))
+
+            # direct route
+            draw_debug.line((x1, y1, xm, ym), (150,50,50,255))
+            draw_debug.line((xm, ym, x2, y2), (50,150,50,255))
+
+            # delta and length
+            xd, yd = abs(x1 - x2), abs(y1 - y2)
+            length = sqrt(xd**2 + yd**2)
+
+            # tangent
+            xt, yt = (y1 - y2) / length, (x1 - x2) / -length
+
+            # tangent from mid-point
+            draw_debug.line((xm, ym, xm + xt * 50, ym + yt * 50), (100,0,0,255))
+            draw_debug.line((xm, ym, xm - xt * 50, ym - yt * 50), (50,0,0,255))
+            draw_debug.text((xm+4, ym+12), "%.2f" % length, fill=(0,250,250,255))
+        except KeyError:
+            pass
+
+        try:
+            if if_count[names] > 1 and (xd > 0 or yd > 0):
+                spacing = max(8, width * 4)
+
+                # initial (max) offsets
+                xo = xt * if_max[names] * spacing
+                yo = yt * if_max[names] * spacing
+
+                # stepped offsets
+                xo += -xt * if_count[names] * spacing
+                yo += -yt * if_count[names] * spacing
+
+                # via coordinates
+                xv = int(xm + xo)
+                yv = int(ym + yo)
+
+                # origin to via
+                draw_debug.line((x1, y1, xv, yv), (200,100,0,255))
+
+                # via to target
+                draw_debug.line((xv, yv, x2, y2), (100,200,0,255))
+
+                # via
+                draw_debug.text((xv+4, yv+4), str(spacing), fill=(250,250,0,255))
+                draw_debug.ellipse((xv-2, yv-2, xv+2, yv+2), (150,150,0,255))
+                img_debug.putpixel((xv, yv), (255, 255, 0, 255))
+
+                weathermap['LINKS'][link_name]['VIA'] = "%d %d" % (xm + xo, ym + yo)
+                #weathermap['LINKS'][link_name]['NODES'] = "%s:%d:%d %s:%d:%d" % (node2, xo, yo, node1, xo, yo)
+                if_count[names] -= 1
+                print(if_count[names])
+        except KeyError:
+            pass
+
+    img_debug.save("/tmp/links_%s.png" % config.get('weathermap', 'name'), "PNG")
 
     return weathermap
 
