@@ -209,6 +209,8 @@ def process_links(con, config, weathermap):
                 weathermap['LINKS'][link_name]['INFOURL'] = "/device/device=%s/tab=port/port=%s/" % (device_id, local_port_id)
                 weathermap['LINKS'][link_name]['TARGET'] = "/data/librenms/rrd/%s/port-id%s.rrd:INOCTETS:OUTOCTETS" % (local_hostname_raw, local_port_id)
 
+                weathermap['LINKS'][link_name]['NODES'] = "%s %s" % (local_hostname.replace(' ', '_'), remote_hostname.replace(' ', '_'))
+
             #The primary key is used in the LINK line to stop links from being deleted as they had the same name
             #As some nodes will have 2 links connecting them
 
