@@ -41,6 +41,10 @@ class WeathermapParser:
                         section = '%sS' % object_type
                         if object_type not in ('NODE', 'LINK'):
                             section = 'GLOBALS'
+                            if 'OUTPUTFILE' in object_type.upper():
+                                template[section][object_type] = object_name
+                                continue
+
 
                         previous_object = object
                         previous_section = section
