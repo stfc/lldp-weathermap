@@ -74,22 +74,23 @@ def process_nodes(con, config, weathermap):
     for name, icon in nodes:
         node = 'NODE %s' % name
 
-        if node not in weathermap['NODES']:
-            weathermap['NODES'][node] = dict()
+        if config.getboolean('autoplace', 'enabled'):
+            if node not in weathermap['NODES']:
+                weathermap['NODES'][node] = dict()
 
         #icon = config.get('icons', 'rank%d' % rank)
-        if 'LABEL' not in weathermap['NODES'][node]:
-            weathermap['NODES'][node]['LABEL'] = '%s (auto placed)' % name.split('.', 1)[0]
+        if node in weathermap['NODES']:
+            if 'LABEL' not in weathermap['NODES'][node]:
+                weathermap['NODES'][node]['LABEL'] = '%s (auto placed)' % name.split('.', 1)[0]
 
-        if 'ICON' not in weathermap['NODES'][node]:
-            weathermap['NODES'][node]['ICON'] = "images/%s.png" % icon
+            if 'ICON' not in weathermap['NODES'][node]:
+                weathermap['NODES'][node]['ICON'] = "images/%s.png" % icon
 
-        if 'INFOURL' not in weathermap['NODES'][node] and name in devices:
-            weathermap['NODES'][node]['INFOURL'] = '/device/device=%d/' % devices[name]
+            if 'INFOURL' not in weathermap['NODES'][node] and name in devices:
+                weathermap['NODES'][node]['INFOURL'] = '/device/device=%d/' % devices[name]
 
-        if 'POSITION' not in weathermap['NODES'][node]:
-            count += 1
-            weathermap['NODES'][node]['POSITION'] = "%s %s" % (1800, 50 * count)
+            if 'POSITION' not in weathermap['NODES'][node]:
+                weathermap['NODES'][node]['POSITION'] = "%s %s" % (1800, 50 * count)
 
     return weathermap
 
