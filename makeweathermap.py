@@ -83,13 +83,23 @@ def process_nodes(con, config, weathermap):
             if "swt-z9000" in hostname:
                 icon = 'network-switch-qsfp-128'
             elif "swt-s4810" in hostname:
-                icon = 'network-switch-sfp-96'
+                icon = 'network-switch-sfp-64'
+            elif "swt-s4048" in hostname:
+                icon = 'network-switch-sfp-64'
             elif "s60" in hostname:
-                icon = 'network-switch-utp-96'
+                icon = 'network-switch-utp-64'
+            elif "swt-55" in hostname:
+                icon = 'network-switch-utp-64'
+            elif "swt-56" in hostname:
+                icon = 'network-switch-utp-64'
             elif "stack" in hostname:
                 icon = 'network-switch-stack-64'
             elif "rtr" in hostname:
                 icon = 'network-router-blue-64'
+            elif hostname.startswith('hv'):
+                icon = 'generic-2u-server'
+            elif hostname.startswith('sn'):
+                icon = 'generic-2u-SAN'
 
             if icon:
                 nodes.append((hostname, icon))
