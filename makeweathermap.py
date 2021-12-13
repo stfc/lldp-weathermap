@@ -47,23 +47,27 @@ def process_nodes(con, config, weathermap):
             name = name[0]
 
             if name.startswith(tuple(name_filters)) and not name.startswith(tuple(name_excludes)):
+                if not '.' in name:
+                    hostnames.add(name + '.pscs.internal')
                 hostnames.add(name.lower())
                 print('Included host "%s"' % name)
             else:
                 print('Excluded host "%s"' % name)
 
         # Turn devices into a lookup table for device ids
-        devices = [ (n.split('.', 1)[0], i) for n, i in devices ]
+        devices = [ (n, i) for n, i in devices ]
         devices = dict(devices)
 
-        for hostname in hostnames:
-            hostname = hostname.split('.', 1)[0]
 
             #Finds an identifiable part of any switch the is worth watching
             #To make spacing even between nodes they are assigned row so the number in each can be counted
 
             #The placer_list holds a value which coresponds to which row the node should be placed
             #No_ is used to count the ammount of nodes in a row
+        for hostname_raw in hostnames:
+            hostname = hostname_raw.lower()
+            if not '.' in hostname:
+                hostname = hostname + '.pscs.internal'
 
             icon = 'network-hub-generic'
             if "swt-z9000" in hostname:
