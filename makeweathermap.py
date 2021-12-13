@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Copyright 2014-2016 Science & Technology Facilities Council
 #
@@ -14,7 +14,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import MySQLdb as mdb
+import pymysql as mdb
 
 from weathermap_parser import WeathermapParser
 
@@ -192,7 +192,7 @@ def main(config):
         output_file.close()
 
 if __name__ == "__main__":
-    from ConfigParser import SafeConfigParser
+    from configparser import SafeConfigParser
     CONFIG = SafeConfigParser()
     CONFIG.readfp(open('makeweathermap.defaults'))
     CONFIG.read(['makeweathermap.cfg'])
