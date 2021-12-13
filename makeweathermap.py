@@ -110,6 +110,9 @@ def process_links(con, config, weathermap):
             and links.remote_hostname not like '%%.fds.rl.ac.uk'
             and ifSpeed > %s
             and ifName not like 'ManagementEthernet%%'
+            and remote_port not like 'ManagementEthernet%%'
+            and ifAlias not like '%%mgt%%'
+            and ifAlias not like '%%man%%'
     """ % config.get('links', 'min_ifspeed'))
     rows = cur.fetchall()
 
