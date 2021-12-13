@@ -74,11 +74,6 @@ def process_nodes(con, config, weathermap):
         devices = dict(devices)
 
 
-            #Finds an identifiable part of any switch the is worth watching
-            #To make spacing even between nodes they are assigned row so the number in each can be counted
-
-            #The placer_list holds a value which coresponds to which row the node should be placed
-            #No_ is used to count the ammount of nodes in a row
         for hostname_raw in hostnames:
             hostname = hostname_raw.lower()
             if not '.' in hostname:
