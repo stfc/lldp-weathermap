@@ -108,7 +108,7 @@ def process_links(con, config, weathermap):
         join devices on devices.device_id=ports.device_id
         where links.remote_hostname not like '%%.gridpp.rl.ac.uk'
             and links.remote_hostname not like '%%.fds.rl.ac.uk'
-            and ifSpeed > %s
+            and ifSpeed >= %s
             and ifName not like 'ManagementEthernet%%'
             and remote_port not like 'ManagementEthernet%%'
             and ifAlias not like '%%mgt%%'
