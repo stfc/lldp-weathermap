@@ -1,11 +1,31 @@
 [database]
 hostname = localhost
-username = observium
+username = librenms
 password = password
-schema = observium
+schema = librenms
 
 [weathermap]
 filename = weathermap_auto.conf
+name = placeholder
+title = placeholder
+links = true
+vlans = false
+
+[autoplace]
+enabled = true
+filter = swt
+exclude =
+initial_i = 0
+initial_j = 1800
+pattern = {j} {i}
+spacing = 50
+name = %%s (auto)
+wrap = false
+limit = 1900
+
+[links]
+min_ifspeed = 1000000000
+base_ifspeed = 20000000000
 
 [icons]
 rank1 = network-switch-qsfp-128
